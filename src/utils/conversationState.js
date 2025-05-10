@@ -46,4 +46,11 @@ export class ConversationState {
       const end = this.endTime || new Date();
       return Math.floor((end - this.startTime) / 1000); // Duration in seconds
     }
+
+    getTranscription() {
+        return this.messages.map(message => {
+            const speaker = message.isUser ? "User" : "Operator AI";
+            return `${speaker}: ${message.text}`;
+        }).join("\n");
+    }
   }
