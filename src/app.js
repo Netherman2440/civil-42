@@ -1,5 +1,7 @@
 // --- src/app.js ---
 import { Conversation } from '@11labs/client';
+import { ConversationState } from './utils/conversationState';
+import { ConversationStorage } from './utils/conversationStorage';
 
 // Global variables
 let conversation = null;
@@ -36,10 +38,12 @@ resetAndShowHomeView();
 function showView(viewToShow) {
     // Hide all views
     document.querySelectorAll('.view').forEach(view => {
+        view.style.display = 'none';
         view.classList.remove('active-view');
     });
     
     // Show the requested view
+    viewToShow.style.display = 'block';
     viewToShow.classList.add('active-view');
 }
 
@@ -291,7 +295,8 @@ function populateConversationSelector() {
         option.value = conv.id;
         
         const date = new Date(conv.startTime);
-        option.textContent = `${date.toLocaleDateString()} ${date.toLocaleTimeString()} - ${conv.scenario.substring(0, 30)}...`;
+        const displayTitle = conv.title ? conv.title : "Title";
+        option.textContent = `${date.toLocaleTimeString()} - ${displayTitle}`;
         
         selector.appendChild(option);
     });
@@ -315,6 +320,14 @@ function loadConversationSummary(id) {
     const conv = conversationStorage.getConversationById(id);
     if (!conv) return;
     
+    // Display title (or "Title" if empty)
+    document.getElementById('titleContent').textContent = conv.title || 'Title';
+    
+    // Display date and time
+    const date = new Date(conv.startTime);
+    const formattedDateTime = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    document.getElementById('dateTimeContent').textContent = formattedDateTime;
+    
     // Display summary and report
     document.getElementById('summaryContent').textContent = conv.summary || 'No summary available';
     document.getElementById('reportContent').textContent = conv.report || 'No report available';
@@ -322,73 +335,35 @@ function loadConversationSummary(id) {
 
 // Saved Conversations Display
 function displaySavedConversations() {
+    // Get all saved conversations
     const conversations = conversationStorage.getAllConversations();
-    console.log('Saved conversations:', conversations);
     
-    // Create a modal to display saved conversations
-    const modal = document.createElement('div');
-    modal.classList.add('modal');
-    
-    const modalContent = document.createElement('div');
-    modalContent.classList.add('modal-content');
-    
-    const closeButton = document.createElement('span');
-    closeButton.classList.add('close-button');
-    closeButton.innerHTML = '&times;';
-    closeButton.onclick = () => document.body.removeChild(modal);
-    
-    modalContent.appendChild(closeButton);
-    
-    const title = document.createElement('h2');
-    title.textContent = 'Saved Conversations';
-    modalContent.appendChild(title);
-    
-    const conversationsList = document.createElement('div');
-    conversationsList.classList.add('conversations-list');
-    
+    // If there are no saved conversations, show a message and return
     if (conversations.length === 0) {
-        conversationsList.innerHTML = '<p>No saved conversations</p>';
-    } else {
-        conversations.forEach(conv => {
-            const item = document.createElement('div');
-            item.classList.add('saved-conversation');
-            
-            const date = new Date(conv.startTime);
-            item.innerHTML = `
-                <h3>Conversation ${conv.id}</h3>
-                <p>Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</p>
-                <p>Scenario: ${conv.scenario || 'None'}</p>
-                <p>Messages: ${conv.messages.length}</p>
-                <button class="load-btn" data-id="${conv.id}">Load</button>
-                <button class="delete-btn" data-id="${conv.id}">Delete</button>
-            `;
-            
-            conversationsList.appendChild(item);
-        });
+        alert('No saved conversations available.');
+        return;
     }
     
-    modalContent.appendChild(conversationsList);
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+    // If no current conversation is selected, use the most recent one
+    if (!currentConversationState) {
+        // Sort conversations by start time (newest first)
+        conversations.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        
+        // Get the most recent conversation
+        const mostRecent = conversations[0];
+        
+        // Create a new conversation state based on the most recent one
+        currentConversationState = new ConversationState(mostRecent.id);
+        currentConversationState.scenario = mostRecent.scenario;
+        currentConversationState.summary = mostRecent.summary;
+        currentConversationState.report = mostRecent.report;
+        currentConversationState.startTime = new Date(mostRecent.startTime);
+        currentConversationState.endTime = mostRecent.endTime ? new Date(mostRecent.endTime) : null;
+        currentConversationState.messages = [...mostRecent.messages];
+    }
     
-    // Add event listeners to buttons
-    document.querySelectorAll('.load-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = e.target.getAttribute('data-id');
-            loadConversation(id);
-            document.body.removeChild(modal);
-        });
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = e.target.getAttribute('data-id');
-            deleteConversation(id);
-            // Refresh the list
-            document.body.removeChild(modal);
-            displaySavedConversations();
-        });
-    });
+    // Show the summary view with the current conversation
+    showSummaryView();
 }
 
 // Function to load a conversation
@@ -417,94 +392,9 @@ function deleteConversation(id) {
 }
 
 // Class to manage conversation state
-class ConversationState {
-  constructor(id = null) {
-    this.id = id || this.generateId();
-    this.messages = [];
-    this.scenario = ""; // Will contain scenario description
-    this.summary = ""; // Will be generated by AI after conversation
-    this.report = ""; // Will be generated by AI as official report
-    this.startTime = new Date();
-    this.endTime = null;
-  }
 
-  generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
-  }
 
-  addMessage(message, isUser) {
-    this.messages.push({
-      text: message,
-      isUser: isUser,
-      timestamp: new Date()
-    });
-  }
 
-  setScenario(scenario) {
-    this.scenario = scenario;
-  }
-
-  setSummary(summary) {
-    this.summary = summary;
-  }
-
-  setReport(report) {
-    this.report = report;
-  }
-
-  endConversation() {
-    this.endTime = new Date();
-  }
-
-  getDuration() {
-    const end = this.endTime || new Date();
-    return Math.floor((end - this.startTime) / 1000); // Duration in seconds
-  }
-}
-
-// Storage manager for conversations
-class ConversationStorage {
-  constructor() {
-    this.storageKey = 'savedConversations';
-  }
-
-  saveConversation(conversation) {
-    const savedConversations = this.getAllConversations();
-    
-    // Check if conversation already exists
-    const index = savedConversations.findIndex(c => c.id === conversation.id);
-    
-    if (index !== -1) {
-      // Update existing conversation
-      savedConversations[index] = conversation;
-    } else {
-      // Add new conversation
-      savedConversations.push(conversation);
-    }
-    
-    localStorage.setItem(this.storageKey, JSON.stringify(savedConversations));
-  }
-
-  getAllConversations() {
-    const data = localStorage.getItem(this.storageKey);
-    return data ? JSON.parse(data) : [];
-  }
-
-  getConversationById(id) {
-    const conversations = this.getAllConversations();
-    return conversations.find(c => c.id === id);
-  }
-
-  deleteConversation(id) {
-    let conversations = this.getAllConversations();
-    conversations = conversations.filter(c => c.id !== id);
-    localStorage.setItem(this.storageKey, JSON.stringify(conversations));
-  }
-
-  clearAllConversations() {
-    localStorage.removeItem(this.storageKey);
-  }
-}
 
 // Initialize the app
 

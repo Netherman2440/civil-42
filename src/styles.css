@@ -113,3 +113,44 @@ h1 {
     margin-right: auto;
     border-bottom-left-radius: 0;
   }
+
+.analysis-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.analysis-section h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.datetime-display {
+    font-size: 14px;
+    color: #666;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+.analysis-content {
+    line-height: 1.5;
+    color: #444;
+}
+
+.conversation-selector {
+    margin-bottom: 20px;
+}
+
+.conversation-selector select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    width: 100%;
+    margin-top: 5px;
+}

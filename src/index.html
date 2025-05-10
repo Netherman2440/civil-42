@@ -44,28 +44,32 @@
             </div>
         </div>
         
-        <!-- SUMMARY VIEW -->
-        <div id="summaryView" class="view">
-            <div class="summary-container">
-                <h2>Conversation Analysis</h2>
-                
-                <div class="conversation-selector">
-                    <label for="conversationSelect">Select Conversation:</label>
-                    <select id="conversationSelect"></select>
-                </div>
-                
-                <div class="analysis-section">
-                    <h3>Summary</h3>
-                    <div id="summaryContent" class="analysis-content"></div>
-                </div>
-                
-                <div class="analysis-section">
-                    <h3>Emergency Report</h3>
-                    <div id="reportContent" class="analysis-content"></div>
-                </div>
-                
-                <button id="backToHomeButton" class="button">Back to Home</button>
+        <!-- SUMMARY VIEW - Initially hidden -->
+        <div id="summaryView" class="view" style="display: none;">
+            <h2>Conversation Analysis</h2>
+            
+            <div class="conversation-selector">
+                <label for="conversationSelect">Select Conversation:</label>
+                <select id="conversationSelect"></select>
             </div>
+            
+            <div class="analysis-section">
+                <h3>Title</h3>
+                <div id="titleContent" class="analysis-content"></div>
+                <div id="dateTimeContent" class="datetime-display"></div>
+            </div>
+            
+            <div class="analysis-section">
+                <h3>Summary</h3>
+                <div id="summaryContent" class="analysis-content"></div>
+            </div>
+            
+            <div class="analysis-section">
+                <h3>Emergency Report</h3>
+                <div id="reportContent" class="analysis-content"></div>
+            </div>
+            
+            <button id="backToHomeButton" class="button">Back to Home</button>
         </div>
     </div>
 
