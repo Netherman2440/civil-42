@@ -3,6 +3,7 @@ import { Conversation } from '@11labs/client';
 import { ConversationState } from './utils/conversationState';
 import { ConversationStorage } from './utils/conversationStorage';
 import { getRandomScenario } from './utils/scenarios';
+import { marked } from 'marked';
 
 import { createAnalysisPrompt } from './@prompts/analysis';
 import { createAutoTitlePrompt } from './@prompts/autotitle';
@@ -375,8 +376,14 @@ function loadConversationSummary(id) {
     // Display scenario
     document.getElementById('scenarioContent').textContent = conv.scenario || 'No scenario available';
     
-    // Display summary and report
-    document.getElementById('summaryContent').textContent = conv.summary || 'No summary available';
+    // Display summary and report - render markdown for summary
+    const summaryElement = document.getElementById('summaryContent');
+    if (conv.summary) {
+        summaryElement.innerHTML = marked.parse(conv.summary);
+    } else {
+        summaryElement.textContent = 'No summary available';
+    }
+    
     document.getElementById('reportContent').textContent = conv.report || 'No report available';
 }
 
