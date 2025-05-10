@@ -5,7 +5,7 @@
  * of the conversation, including key points and assessment of the caller's performance.
  */
 
-export function createAnalysisPrompt(duration, scenario) {
+export function createAnalysisPrompt(duration, scenario, transcription) {
     return `
     Jesteś ekspertem analizującym rozmowy alarmowe. Przeanalizuj poniższą transkrypcję rozmowy alarmowej i przedstaw szczegółową ocenę.
 
@@ -25,5 +25,6 @@ export function createAnalysisPrompt(duration, scenario) {
     Format analizę jako ustrukturyzowaną ocenę z jasnymi sekcjami i punktami, gdzie to właściwe.
 
     Transkrypcja rozmowy:
+    ${transcription}
     `;
 } 

@@ -4,11 +4,22 @@ import { ConversationState } from './utils/conversationState';
 import { ConversationStorage } from './utils/conversationStorage';
 import { getRandomScenario } from './utils/scenarios';
 
+import { createAnalysisPrompt } from './@prompts/analysis';
+import { createAutoTitlePrompt } from './@prompts/autotitle';
+
+// Import the OpenAI service
+import openaiService from './utils/openaiService';
+
+//dotenv.config();
+
+//const apiKey = process.env.OPENAI_API_KEY;
+//console.log(apiKey); // Sprawdź, czy klucz jest poprawnie załadowany
+
 // Global variables
 let conversation = null;
 let timerInterval = null;
 let seconds = 0;
-let currentConversationState = null;
+let currentConversationState = new ConversationState();
 const conversationStorage = new ConversationStorage();
 let countdownInterval = null;
 
@@ -227,6 +238,47 @@ async function startConversation() {
     }
 }
 
+async function performAnalysis() {
+    if (!currentConversationState) return;
+
+    // Get transcription and duration
+    const transcription = currentConversationState.getTranscription();
+    const duration = currentConversationState.getDuration();
+    const scenario = currentConversationState.scenario;
+
+    // Create prompts
+    const analysisPromptText = createAnalysisPrompt(duration, scenario, transcription);
+    const autoTitlePromptText = createAutoTitlePrompt(transcription);
+    
+    // Format messages for OpenAI API
+    const analysisMessages = [
+        { role: 'system', content: analysisPromptText }
+    ];
+    
+    const autoTitleMessages = [
+        { role: 'system', content: autoTitlePromptText },
+    ];
+
+    // Perform API calls concurrently
+    try {
+        const [analysisResponse, autoTitleResponse] = await Promise.all([
+            openaiService.generateResponse(analysisMessages, false),
+            openaiService.generateResponse(autoTitleMessages, false)
+        ]);
+
+        // Log results to console
+        console.log('Analysis Result:', analysisResponse);
+        console.log('Auto Title Result:', autoTitleResponse);
+
+        // Set the results in the current conversation state
+        currentConversationState.setSummary(analysisResponse);
+        currentConversationState.setTitle(autoTitleResponse);
+
+    } catch (error) {
+        console.error('Error performing analysis:', error);
+    }
+}
+
 async function endConversation() {
     if (conversation) {
         await conversation.endSession();
@@ -241,25 +293,15 @@ async function endConversation() {
     analysisInProgress.style.display = 'block';
     
     if (currentConversationState) {
-        // For demo purposes, we'll just create simple summary and report
-        currentConversationState.setSummary("This is an auto-generated summary of the conversation.");
-        currentConversationState.setReport("This is an auto-generated emergency report.");
-        currentConversationState.setTitle("Title");
-        // Save the final state
-        currentConversationState.endConversation();
-        conversationStorage.saveConversation(currentConversationState);
-        
-        // Simulate API call to generate summary and report
-        simulateAnalysis();
-    }
-}
+        // Perform actual analysis
+        await performAnalysis();
 
-function simulateAnalysis() {
-    // Simulate API call delay
-    setTimeout(() => {
+        // Save the updated conversation state
+        conversationStorage.saveConversation(currentConversationState);
+
         // Enable the Go to Summary button
         document.getElementById('goToSummaryButton').disabled = false;
-    }, 3000);
+    }
 }
 
 function addMessageToHistory(message, isUser = false) {
@@ -402,5 +444,6 @@ function deleteConversation(id) {
 
 
 // Initialize the app
+
 
 
