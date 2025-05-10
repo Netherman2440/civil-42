@@ -2,6 +2,7 @@
 import { Conversation } from '@11labs/client';
 import { ConversationState } from './utils/conversationState';
 import { ConversationStorage } from './utils/conversationStorage';
+import { getRandomScenario } from './utils/scenarios';
 
 // Global variables
 let conversation = null;
@@ -87,8 +88,9 @@ function prepareScenario() {
     // Create new conversation state
     currentConversationState = new ConversationState();
     
-    // Set a sample scenario (in a real app, this would be randomly selected)
-    const scenario = "Sample emergency scenario: Report a car accident on Main Street. There are two injured people.";
+    // Get a random scenario
+    const scenarioData = getRandomScenario();
+    const scenario = `${scenarioData.title}: ${scenarioData.description}`;
     currentConversationState.setScenario(scenario);
     
     // Display scenario
@@ -327,6 +329,9 @@ function loadConversationSummary(id) {
     const date = new Date(conv.startTime);
     const formattedDateTime = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     document.getElementById('dateTimeContent').textContent = formattedDateTime;
+    
+    // Display scenario
+    document.getElementById('scenarioContent').textContent = conv.scenario || 'No scenario available';
     
     // Display summary and report
     document.getElementById('summaryContent').textContent = conv.summary || 'No summary available';
