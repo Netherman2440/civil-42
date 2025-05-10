@@ -17,7 +17,10 @@ export function createAutoTitlePrompt(transcription) {
     3. Uwzględnij istotne szczegóły, takie jak lokalizacja lub powaga sytuacji, tylko jeśli są kluczowe
     4. Format powinien być jasny i profesjonalny
 
-    Przykładowy format: "Zawał w Biurowcu" lub "Dziecko w Zamkniętym Samochodzie"
+    Przykładowy format: 
+    Zawał w Biurowcu 
+    lub 
+    Dziecko w Zamkniętym Samochodzie
 
     Transkrypcja rozmowy:
     ${transcription}

@@ -372,15 +372,11 @@ function loadConversationSummary(id) {
     const conv = conversationStorage.getConversationById(id);
     if (!conv) return;
     
-    // Display title (or "Title" if empty)
-    document.getElementById('titleContent').textContent = conv.title || 'Title';
+    // Display title in blue (replacing the "Title" label)
+    document.getElementById('titleContent').textContent = conv.title || '';
+
     
-    // Display date and time
-    const date = new Date(conv.startTime);
-    const formattedDateTime = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-    document.getElementById('dateTimeContent').textContent = formattedDateTime;
-    
-    // Display scenario
+    // Display only scenario content without the "Scenario" label
     document.getElementById('scenarioContent').textContent = conv.scenario || 'No scenario available';
     
     // Display summary and report - render markdown for summary
@@ -405,26 +401,30 @@ function displaySavedConversations() {
         return;
     }
     
-    // If no current conversation is selected, use the most recent one
-    if (!currentConversationState) {
-        // Sort conversations by start time (newest first)
-        conversations.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-        
-        // Get the most recent conversation
-        const mostRecent = conversations[0];
-        
-        // Create a new conversation state based on the most recent one
-        currentConversationState = new ConversationState(mostRecent.id);
-        currentConversationState.scenario = mostRecent.scenario;
-        currentConversationState.summary = mostRecent.summary;
-        currentConversationState.report = mostRecent.report;
-        currentConversationState.startTime = new Date(mostRecent.startTime);
-        currentConversationState.endTime = mostRecent.endTime ? new Date(mostRecent.endTime) : null;
-        currentConversationState.messages = [...mostRecent.messages];
+    // Sort conversations by start time (newest first)
+    conversations.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+    
+    // Get the most recent conversation
+    const mostRecent = conversations[0];
+    if (!mostRecent) {
+        alert('No saved conversations available.');
+        return;
     }
+    // Create a new conversation state based on the most recent one
+    currentConversationState = new ConversationState(mostRecent.id);
+    currentConversationState.scenario = mostRecent.scenario;
+    currentConversationState.summary = mostRecent.summary;
+    currentConversationState.report = mostRecent.report;
+    currentConversationState.title = mostRecent.title;
+    currentConversationState.startTime = new Date(mostRecent.startTime);
+    currentConversationState.endTime = mostRecent.endTime ? new Date(mostRecent.endTime) : null;
+    currentConversationState.messages = [...mostRecent.messages];
     
     // Show the summary view with the current conversation
     showSummaryView();
+    
+    // Set the selector to the most recent conversation
+    document.getElementById('conversationSelect').value = mostRecent.id;
 }
 
 // Function to load a conversation

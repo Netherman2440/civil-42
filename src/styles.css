@@ -427,3 +427,24 @@ h3 {
     transform: none;
     box-shadow: none;
 }
+
+/* Make the title content blue and styled properly */
+#titleContent {
+    color: #4a6ee0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Hide the date/time section */
+#dateTimeContent {
+    display: none;
+}
+
+/* Style for scenario content without a label */
+#scenarioContent {
+    background-color: #2a2a2a;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1.5rem;
+}
