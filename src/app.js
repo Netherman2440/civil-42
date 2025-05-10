@@ -176,7 +176,6 @@ function stopTimer() {
 
 async function startConversation() {
     // Hide scenario display and show conversation interface
-    scenarioDisplay.style.display = 'none';
     conversationInterface.style.display = 'block';
     
     try {
@@ -235,6 +234,7 @@ async function endConversation() {
     stopTimer();
     
     // Hide conversation interface and show analysis in progress
+    scenarioDisplay.style.display = 'none';
     conversationInterface.style.display = 'none';
     analysisInProgress.style.display = 'block';
     
@@ -242,7 +242,7 @@ async function endConversation() {
         // For demo purposes, we'll just create simple summary and report
         currentConversationState.setSummary("This is an auto-generated summary of the conversation.");
         currentConversationState.setReport("This is an auto-generated emergency report.");
-        
+        currentConversationState.setTitle("Title");
         // Save the final state
         currentConversationState.endConversation();
         conversationStorage.saveConversation(currentConversationState);
