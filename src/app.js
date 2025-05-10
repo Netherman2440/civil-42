@@ -57,7 +57,7 @@ function startTimer() {
         seconds++;
         
         const timerElement = document.getElementById('timer');
-        timerElement.textContent = `Czas rozmowy: ${seconds} sekund`;
+        timerElement.textContent = `Conversation time: ${seconds} seconds`;
         
     }, 1000);
 }
@@ -94,6 +94,7 @@ async function startConversation() {
             },
             onDisconnect: () => {
                 console.log('Disconnected');
+                stopTimer();
                 updateStatus(false);
                 startButton.disabled = false;
                 endButton.disabled = true;
@@ -104,8 +105,12 @@ async function startConversation() {
                 alert('An error occurred during the conversation.');
             },
             onModeChange: (mode) => {
-                console.log('Mode changed:', mode); // Debug log to see exact mode object
+                //console.log('Mode changed:', mode); // Debug log to see exact mode object
                 updateSpeakingStatus(mode);
+            },
+            onMessage: (message) => {
+                console.log('Message received:', message);
+                addMessageToHistory(message.message, message.role === 'user');
             }
         });
 
@@ -144,6 +149,10 @@ function setWelcomeMessage(userName) {
 // Wywołaj tę funkcję raz, np. po załadowaniu strony
 document.addEventListener('DOMContentLoaded', () => {
     setWelcomeMessage('Użytkowniku'); // Możesz przekazać imię użytkownika
+    
+    // Dodaj testową wiadomość, aby sprawdzić, czy historia konwersacji działa
+    addMessageToHistory('Witaj! Jestem agentem AI. Jak mogę Ci pomóc?', false);
+    addMessageToHistory('Cześć! Mam pytanie...', true);
 });
 
 // Funkcja do aktualizacji historii rozmowy
@@ -163,4 +172,7 @@ function addMessageToHistory(message, isUser = false) {
     
     // Przewiń kontener do najnowszej wiadomości
     historyContainer.scrollTop = historyContainer.scrollHeight;
+    
+    // Debug log to verify message is being added
+    console.log('Added message to history:', { message, isUser });
 }

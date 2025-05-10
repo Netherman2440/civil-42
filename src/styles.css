@@ -81,3 +81,35 @@ h1 {
     background-color: #ff4444;
     color: white;
 }
+
+.conversation-history {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 20px auto;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    width: 80%;
+  }
+  
+  .message {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+  
+  .user-message {
+    background-color: #e3f2fd;
+    margin-left: auto;
+    text-align: right;
+    border-bottom-right-radius: 0;
+  }
+  
+  .agent-message {
+    background-color: #f1f1f1;
+    margin-right: auto;
+    border-bottom-left-radius: 0;
+  }
