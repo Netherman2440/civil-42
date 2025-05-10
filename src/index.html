@@ -9,19 +9,66 @@
 <body>
     <div class="container">
         <h1>AI Operator 112</h1>
-        <div class="status-container">
-            <div id="connectionStatus" class="status">Disconnected</div>
-            <div id="speakingStatus" class="speaking-status">Operator Silent</div>
+        
+        <!-- HOME VIEW -->
+        <div id="homeView" class="view active-view">
+            <div class="welcome-message">
+                <h2>Welcome to AI Operator 112</h2>
+                <p>Are you ready for the test?</p>
+                <button id="startTestButton" class="button">Yes, I'm ready</button>
+                <button id="showSavedConversationsButton" class="button">Show Saved Conversations</button>
+            </div>
+            
+            <div id="scenarioDisplay" class="scenario-display" style="display: none;">
+                <h3>Scenario:</h3>
+                <p id="scenarioText"></p>
+                <div id="countdown" class="countdown"></div>
+            </div>
+            
+            <div id="conversationInterface" style="display: none;">
+                <div class="status-container">
+                    <div id="connectionStatus" class="status">Disconnected</div>
+                    <div id="speakingStatus" class="speaking-status">Operator Silent</div>
+                </div>
+                <div class="controls">
+                    <button id="endButton" class="button">End Conversation</button>
+                </div>
+                <div id="timer">Conversation time: 0 seconds</div>
+                <div id="conversationHistory" class="conversation-history"></div>
+            </div>
+            
+            <div id="analysisInProgress" style="display: none;">
+                <p>Analyzing conversation...</p>
+                <div class="loader"></div>
+                <button id="goToSummaryButton" class="button" disabled>Go to Analysis</button>
+            </div>
         </div>
-        <div class="controls">
-            <button id="startButton" class="button">Start Conversation</button>
-            <button id="endButton" class="button" disabled>End Conversation</button>
-            <button id="showSavedConversationsButton" class="button">Show Saved Conversations</button>
+        
+        <!-- SUMMARY VIEW -->
+        <div id="summaryView" class="view">
+            <div class="summary-container">
+                <h2>Conversation Analysis</h2>
+                
+                <div class="conversation-selector">
+                    <label for="conversationSelect">Select Conversation:</label>
+                    <select id="conversationSelect"></select>
+                </div>
+                
+                <div class="analysis-section">
+                    <h3>Summary</h3>
+                    <div id="summaryContent" class="analysis-content"></div>
+                </div>
+                
+                <div class="analysis-section">
+                    <h3>Emergency Report</h3>
+                    <div id="reportContent" class="analysis-content"></div>
+                </div>
+                
+                <button id="backToHomeButton" class="button">Back to Home</button>
+            </div>
         </div>
-        <div id="timer">Czas rozmowy: 0 sekund</div>
     </div>
 
-    <div id="conversationHistory" class="conversation-history"></div>
     <script src="/static/bundle.js"></script>
 </body>
 </html>

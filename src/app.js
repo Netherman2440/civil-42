@@ -1,19 +1,118 @@
 // --- src/app.js ---
 import { Conversation } from '@11labs/client';
 
+// Global variables
 let conversation = null;
 let timerInterval = null;
 let seconds = 0;
-let currentConversationState = null; // Current conversation state
-const conversationStorage = new ConversationStorage(); // Initialize storage
+let currentConversationState = null;
+const conversationStorage = new ConversationStorage();
+let countdownInterval = null;
 
-document.getElementById('startButton').addEventListener('click', startConversation);
+// DOM Elements
+const homeView = document.getElementById('homeView');
+const summaryView = document.getElementById('summaryView');
+const scenarioDisplay = document.getElementById('scenarioDisplay');
+const conversationInterface = document.getElementById('conversationInterface');
+const analysisInProgress = document.getElementById('analysisInProgress');
+const welcomeMessage = document.querySelector('.welcome-message');  //?
+
+// Event Listeners
+document.getElementById('startTestButton').addEventListener('click', prepareScenario);
 document.getElementById('endButton').addEventListener('click', endConversation);
 document.getElementById('showSavedConversationsButton').addEventListener('click', displaySavedConversations);
+document.getElementById('goToSummaryButton').addEventListener('click', showSummaryView);
+document.getElementById('backToHomeButton').addEventListener('click', resetAndShowHomeView);
+document.getElementById('conversationSelect').addEventListener('change', loadSelectedConversation);
 
+// Error handling
 window.addEventListener('error', function(event) {
     console.error('Global error:', event.error);
 });
+
+resetAndShowHomeView();
+
+// View Management Functions
+function showView(viewToShow) {
+    // Hide all views
+    document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active-view');
+    });
+    
+    // Show the requested view
+    viewToShow.classList.add('active-view');
+}
+
+function resetAndShowHomeView() {
+    // Reset home view to initial state
+    welcomeMessage.style.display = 'block';
+    scenarioDisplay.style.display = 'none';
+    conversationInterface.style.display = 'none';
+    analysisInProgress.style.display = 'none';
+    
+    // Reset UI elements
+    document.getElementById('connectionStatus').textContent = 'Disconnected';
+    document.getElementById('connectionStatus').classList.remove('connected');
+    document.getElementById('speakingStatus').textContent = 'Operator Silent';
+    document.getElementById('speakingStatus').classList.remove('speaking');
+    document.getElementById('timer').textContent = 'Conversation time: 0 seconds';
+    document.getElementById('conversationHistory').innerHTML = '';
+    
+    // Show home view
+    showView(homeView);
+}
+
+function showSummaryView() {
+    // Populate conversation selector
+    populateConversationSelector();
+    
+    // Load the current conversation if available
+    if (currentConversationState) {
+        loadConversationSummary(currentConversationState.id);
+    }
+    
+    // Show summary view
+    showView(summaryView);
+}
+
+// Scenario and Conversation Functions
+function prepareScenario() {
+    // Hide welcome message
+    welcomeMessage.style.display = 'none';
+    
+    // Create new conversation state
+    currentConversationState = new ConversationState();
+    
+    // Set a sample scenario (in a real app, this would be randomly selected)
+    const scenario = "Sample emergency scenario: Report a car accident on Main Street. There are two injured people.";
+    currentConversationState.setScenario(scenario);
+    
+    // Display scenario
+    document.getElementById('scenarioText').textContent = scenario;
+    scenarioDisplay.style.display = 'block';
+    
+    // Start countdown
+    startCountdown();
+}
+
+function startCountdown() {
+    let count = 5;
+    const countdownElement = document.getElementById('countdown');
+    
+    countdownElement.textContent = count;
+    countdownElement.style.display = 'block';
+    
+    countdownInterval = setInterval(() => {
+        count--;
+        countdownElement.textContent = count;
+        
+        if (count <= 0) {
+            clearInterval(countdownInterval);
+            countdownElement.style.display = 'none';
+            startConversation();
+        }
+    }, 1000);
+}
 
 async function requestMicrophonePermission() {
     try {
@@ -37,7 +136,6 @@ async function getSignedUrl() {
     }
 }
 
-
 function updateStatus(isConnected) {
     const statusElement = document.getElementById('connectionStatus');
     statusElement.textContent = isConnected ? 'Connected' : 'Disconnected';
@@ -46,11 +144,9 @@ function updateStatus(isConnected) {
 
 function updateSpeakingStatus(mode) {
     const statusElement = document.getElementById('speakingStatus');
-    // Update based on the exact mode string we receive
     const isSpeaking = mode.mode === 'speaking';
     statusElement.textContent = isSpeaking ? 'Operator Speaking' : 'Operator Silent';
     statusElement.classList.toggle('speaking', isSpeaking);
-    //console.log('Speaking status updated:', { mode, isSpeaking }); // Debug log
 }
 
 function startTimer() {
@@ -75,17 +171,11 @@ function stopTimer() {
 }
 
 async function startConversation() {
-    const startButton = document.getElementById('startButton');
-    const endButton = document.getElementById('endButton');
+    // Hide scenario display and show conversation interface
+    scenarioDisplay.style.display = 'none';
+    conversationInterface.style.display = 'block';
     
     try {
-        // Create new conversation state
-        currentConversationState = new ConversationState();
-        
-        // For demo purposes, set a sample scenario
-        // In a real app, you might want to select this from a dropdown or fetch from an API
-        currentConversationState.setScenario("Sample emergency scenario: Report a car accident");
-        
         const hasPermission = await requestMicrophonePermission();
         if (!hasPermission) {
             alert('Microphone permission is required for the conversation.');
@@ -93,23 +183,20 @@ async function startConversation() {
         }
 
         const signedUrl = await getSignedUrl();
-        //const agentId = await getAgentId();
         
         conversation = await Conversation.startSession({
             signedUrl: signedUrl,
-            //agentId: agentId,
             onConnect: () => {
                 console.log('Connected');
                 updateStatus(true);
-                startButton.disabled = true;
-                endButton.disabled = false;
+                startTimer();
+                
+               
             },
             onDisconnect: () => {
                 console.log('Disconnected');
                 stopTimer();
                 updateStatus(false);
-                startButton.disabled = false;
-                endButton.disabled = true;
                 updateSpeakingStatus({ mode: 'listening' });
                 
                 // Save conversation state when disconnected
@@ -129,8 +216,6 @@ async function startConversation() {
                 addMessageToHistory(message.message, message.role === 'user');
             }
         });
-
-        startTimer();
     } catch (error) {
         console.error('Error starting conversation:', error);
         alert('Failed to start conversation. Please try again.');
@@ -145,7 +230,10 @@ async function endConversation() {
 
     stopTimer();
     
-    // Generate summary and report (in a real app, this would call an AI service)
+    // Hide conversation interface and show analysis in progress
+    conversationInterface.style.display = 'none';
+    analysisInProgress.style.display = 'block';
+    
     if (currentConversationState) {
         // For demo purposes, we'll just create simple summary and report
         currentConversationState.setSummary("This is an auto-generated summary of the conversation.");
@@ -155,38 +243,177 @@ async function endConversation() {
         currentConversationState.endConversation();
         conversationStorage.saveConversation(currentConversationState);
         
-        // Display a message that the conversation was saved
-        alert(`Conversation saved with ID: ${currentConversationState.id}`);
+        // Simulate API call to generate summary and report
+        simulateAnalysis();
     }
 }
 
+function simulateAnalysis() {
+    // Simulate API call delay
+    setTimeout(() => {
+        // Enable the Go to Summary button
+        document.getElementById('goToSummaryButton').disabled = false;
+    }, 3000);
+}
 
-
-// Funkcja do aktualizacji historii rozmowy
 function addMessageToHistory(message, isUser = false) {
     const historyContainer = document.getElementById('conversationHistory');
     
-    // Utwórz nowy element div dla wiadomości
+    // Create new message element
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
     messageElement.classList.add(isUser ? 'user-message' : 'agent-message');
     
-    // Dodaj zawartość wiadomości
+    // Add message content
     messageElement.textContent = message;
     
-    // Dodaj wiadomość do kontenera historii
+    // Add message to container
     historyContainer.appendChild(messageElement);
     
-    // Przewiń kontener do najnowszej wiadomości
+    // Scroll to latest message
     historyContainer.scrollTop = historyContainer.scrollHeight;
     
     // Add message to current conversation state
     if (currentConversationState) {
         currentConversationState.addMessage(message, isUser);
     }
+}
+
+// Summary View Functions
+function populateConversationSelector() {
+    const selector = document.getElementById('conversationSelect');
+    selector.innerHTML = '';
     
-    // Debug log to verify message is being added
-    console.log('Added message to history:', { message, isUser });
+    const conversations = conversationStorage.getAllConversations();
+    
+    conversations.forEach(conv => {
+        const option = document.createElement('option');
+        option.value = conv.id;
+        
+        const date = new Date(conv.startTime);
+        option.textContent = `${date.toLocaleDateString()} ${date.toLocaleTimeString()} - ${conv.scenario.substring(0, 30)}...`;
+        
+        selector.appendChild(option);
+    });
+    
+    // Select current conversation if available
+    if (currentConversationState) {
+        selector.value = currentConversationState.id;
+    }
+}
+
+function loadSelectedConversation() {
+    const selector = document.getElementById('conversationSelect');
+    const selectedId = selector.value;
+    
+    if (selectedId) {
+        loadConversationSummary(selectedId);
+    }
+}
+
+function loadConversationSummary(id) {
+    const conv = conversationStorage.getConversationById(id);
+    if (!conv) return;
+    
+    // Display summary and report
+    document.getElementById('summaryContent').textContent = conv.summary || 'No summary available';
+    document.getElementById('reportContent').textContent = conv.report || 'No report available';
+}
+
+// Saved Conversations Display
+function displaySavedConversations() {
+    const conversations = conversationStorage.getAllConversations();
+    console.log('Saved conversations:', conversations);
+    
+    // Create a modal to display saved conversations
+    const modal = document.createElement('div');
+    modal.classList.add('modal');
+    
+    const modalContent = document.createElement('div');
+    modalContent.classList.add('modal-content');
+    
+    const closeButton = document.createElement('span');
+    closeButton.classList.add('close-button');
+    closeButton.innerHTML = '&times;';
+    closeButton.onclick = () => document.body.removeChild(modal);
+    
+    modalContent.appendChild(closeButton);
+    
+    const title = document.createElement('h2');
+    title.textContent = 'Saved Conversations';
+    modalContent.appendChild(title);
+    
+    const conversationsList = document.createElement('div');
+    conversationsList.classList.add('conversations-list');
+    
+    if (conversations.length === 0) {
+        conversationsList.innerHTML = '<p>No saved conversations</p>';
+    } else {
+        conversations.forEach(conv => {
+            const item = document.createElement('div');
+            item.classList.add('saved-conversation');
+            
+            const date = new Date(conv.startTime);
+            item.innerHTML = `
+                <h3>Conversation ${conv.id}</h3>
+                <p>Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</p>
+                <p>Scenario: ${conv.scenario || 'None'}</p>
+                <p>Messages: ${conv.messages.length}</p>
+                <button class="load-btn" data-id="${conv.id}">Load</button>
+                <button class="delete-btn" data-id="${conv.id}">Delete</button>
+            `;
+            
+            conversationsList.appendChild(item);
+        });
+    }
+    
+    modalContent.appendChild(conversationsList);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Add event listeners to buttons
+    document.querySelectorAll('.load-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id');
+            loadConversation(id);
+            document.body.removeChild(modal);
+        });
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id');
+            deleteConversation(id);
+            // Refresh the list
+            document.body.removeChild(modal);
+            displaySavedConversations();
+        });
+    });
+}
+
+// Function to load a conversation
+function loadConversation(id) {
+    const conv = conversationStorage.getConversationById(id);
+    if (!conv) return;
+    
+    // Set as current conversation
+    currentConversationState = new ConversationState(conv.id);
+    currentConversationState.scenario = conv.scenario;
+    currentConversationState.summary = conv.summary;
+    currentConversationState.report = conv.report;
+    currentConversationState.startTime = new Date(conv.startTime);
+    currentConversationState.endTime = conv.endTime ? new Date(conv.endTime) : null;
+    currentConversationState.messages = [...conv.messages];
+    
+    // Show summary view with this conversation
+    showSummaryView();
+}
+
+// Function to delete a conversation
+function deleteConversation(id) {
+    if (confirm('Are you sure you want to delete this conversation?')) {
+        conversationStorage.deleteConversation(id);
+    }
 }
 
 // Class to manage conversation state
@@ -279,79 +506,6 @@ class ConversationStorage {
   }
 }
 
-// Function to display all saved conversations (you can add this to a button)
-function displaySavedConversations() {
-    const conversations = conversationStorage.getAllConversations();
-    console.log('Saved conversations:', conversations);
-    
-    // Here you could populate a dropdown or list with the conversations
-    // For example:
-    const container = document.getElementById('savedConversations');
-    if (container) {
-        container.innerHTML = '';
-        
-        if (conversations.length === 0) {
-            container.innerHTML = '<p>No saved conversations</p>';
-            return;
-        }
-        
-        conversations.forEach(conv => {
-            const item = document.createElement('div');
-            item.classList.add('saved-conversation');
-            
-            const date = new Date(conv.startTime);
-            item.innerHTML = `
-                <h3>Conversation ${conv.id}</h3>
-                <p>Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</p>
-                <p>Scenario: ${conv.scenario || 'None'}</p>
-                <p>Messages: ${conv.messages.length}</p>
-                <button class="load-btn" data-id="${conv.id}">Load</button>
-                <button class="delete-btn" data-id="${conv.id}">Delete</button>
-            `;
-            
-            container.appendChild(item);
-        });
-        
-        // Add event listeners to buttons
-        document.querySelectorAll('.load-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const id = e.target.getAttribute('data-id');
-                loadConversation(id);
-            });
-        });
-        
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const id = e.target.getAttribute('data-id');
-                deleteConversation(id);
-            });
-        });
-    }
-}
+// Initialize the app
 
-// Function to load a conversation
-function loadConversation(id) {
-    const conv = conversationStorage.getConversationById(id);
-    if (!conv) return;
-    
-    // Clear current conversation history
-    const historyContainer = document.getElementById('conversationHistory');
-    historyContainer.innerHTML = '';
-    
-    // Load conversation messages
-    conv.messages.forEach(msg => {
-        addMessageToHistory(msg.text, msg.isUser);
-    });
-    
-    // Display scenario, summary and report
-    alert(`Scenario: ${conv.scenario}\nSummary: ${conv.summary}\nReport: ${conv.report}`);
-}
-
-// Function to delete a conversation
-function deleteConversation(id) {
-    if (confirm('Are you sure you want to delete this conversation?')) {
-        conversationStorage.deleteConversation(id);
-        displaySavedConversations(); // Refresh the list
-    }
-}
 
