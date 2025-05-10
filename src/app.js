@@ -39,6 +39,7 @@ document.getElementById('showSavedConversationsButton').addEventListener('click'
 document.getElementById('goToSummaryButton').addEventListener('click', showSummaryView);
 document.getElementById('backToHomeButton').addEventListener('click', resetAndShowHomeView);
 document.getElementById('conversationSelect').addEventListener('change', loadSelectedConversation);
+document.getElementById('deleteCurrentConversationButton').addEventListener('click', deleteCurrentConversation);
 
 // Error handling
 window.addEventListener('error', function(event) {
@@ -443,6 +444,35 @@ function deleteConversation(id) {
     if (confirm('Are you sure you want to delete this conversation?')) {
         conversationStorage.deleteConversation(id);
     }
+}
+
+// Function to delete the current conversation
+function deleteCurrentConversation() {
+  const selector = document.getElementById('conversationSelect');
+  const selectedId = selector.value;
+  
+  if (!selectedId) {
+    alert('No conversation selected.');
+    return;
+  }
+  
+  if (confirm('Are you sure you want to delete this conversation? This cannot be undone.')) {
+    // Delete the conversation
+    conversationStorage.deleteConversation(selectedId);
+    
+    // Update the conversation selector
+    populateConversationSelector();
+    
+    // If there are still conversations, load the first one
+    const conversations = conversationStorage.getAllConversations();
+    if (conversations.length > 0) {
+      loadConversationSummary(conversations[0].id);
+    } else {
+      // If no conversations left, go back to home
+      resetAndShowHomeView();
+    }
+
+  }
 }
 
 // Class to manage conversation state
