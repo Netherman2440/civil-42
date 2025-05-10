@@ -301,6 +301,12 @@ async function endConversation() {
         // Save the updated conversation state
         conversationStorage.saveConversation(currentConversationState);
 
+        // Hide the loader when analysis is complete
+        document.querySelector('#analysisInProgress .loader').style.display = 'none';
+        
+        // Update the message to indicate analysis is complete
+        document.querySelector('#analysisInProgress p').textContent = 'Analysis complete!';
+
         // Enable the Go to Summary button
         document.getElementById('goToSummaryButton').disabled = false;
     }
