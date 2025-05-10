@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Operator 112</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -14,13 +17,13 @@
         <div id="homeView" class="view active-view">
             <div class="welcome-message">
                 <h2>Welcome to AI Operator 112</h2>
-                <p>Are you ready for the test?</p>
-                <button id="startTestButton" class="button">Yes, I'm ready</button>
-                <button id="showSavedConversationsButton" class="button">Show Saved Conversations</button>
+                <p>This simulation will test your ability to communicate in emergency situations.</p>
+                <button id="startTestButton" class="button">Start New Test</button>
+                <button id="showSavedConversationsButton" class="button">View Previous Tests</button>
             </div>
             
             <div id="scenarioDisplay" class="scenario-display" style="display: none;">
-                <h3>Scenario:</h3>
+                <h3>Your Scenario:</h3>
                 <p id="scenarioText"></p>
                 <div id="countdown" class="countdown"></div>
             </div>
@@ -38,9 +41,9 @@
             </div>
             
             <div id="analysisInProgress" style="display: none;">
-                <p>Analyzing conversation...</p>
+                <p>Analyzing your conversation...</p>
                 <div class="loader"></div>
-                <button id="goToSummaryButton" class="button" disabled>Go to Analysis</button>
+                <button id="goToSummaryButton" class="button" disabled>View Analysis</button>
             </div>
         </div>
         
