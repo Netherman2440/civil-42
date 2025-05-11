@@ -18,8 +18,8 @@ Agent wykorzystuje technologię serwerów Eleven Labs do przetwarzania mowy i pr
    cd ai-operator-112
    ```
 3. Skonfiguruj zmienne środowiskowe
-   - `cp .env.example .env`
-   - Uzupełnij wymagane wartości
+   - Utwórz plik `.env` w głównym katalogu projektu
+   - Uzupełnij wymagane wartości (sprawdź przykładowy plik `.env.example`)
 4. Zainstaluj zależności
    ```bash
    npm install
@@ -35,7 +35,6 @@ Agent wykorzystuje technologię serwerów Eleven Labs do przetwarzania mowy i pr
 
 ## Wymagania
 
-- Node.js (wersja 14 lub nowsza)
-- Konto Eleven Labs z odpowiednim API key
-- Przeglądarka internetowa z obsługą WebRTC
+- JavaScript
+- Przeglądarka internetowa
 
