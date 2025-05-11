@@ -210,7 +210,8 @@ async function startConversation() {
                 updateStatus(true);
                 startTimer();
                 
-               
+                // Initialize live report with test data
+                initializeLiveReport();
             },
             onDisconnect: () => {
                 console.log('Disconnected');
@@ -232,12 +233,107 @@ async function startConversation() {
                 updateSpeakingStatus(mode);
             },
             onMessage: (message) => {
-                addMessageToHistory(message.message, message.role === 'user');
+                addMessageToHistory(message.message, message.source === 'user');
+                console.log('Message received:', message);
+                // If it's a user message, update the live report
+                if (message.source === 'user') {
+                    updateLiveReport();
+                }
             }
         });
     } catch (error) {
         console.error('Error starting conversation:', error);
         alert('Failed to start conversation. Please try again.');
+    }
+}
+
+// Add this new function to initialize and update the live report
+function initializeLiveReport() {
+    // Set initial test data
+    document.getElementById('liveReportReason').textContent = 'Brak danych';
+    document.getElementById('liveReportPlace').textContent = 'Brak danych';
+    document.getElementById('liveReportVictims').textContent = 'Brak danych';
+    
+    // Set importance level
+    document.getElementById('liveImportanceLevel').textContent = 'Brak danych';
+    
+    // Update importance indicator class
+    const importanceIndicator = document.getElementById('liveImportanceIndicator');
+    importanceIndicator.className = 'importance-indicator medium-priority';
+    
+}
+
+// Add this new function to update the live report
+async function updateLiveReport() {
+    try {
+        // Get current transcription
+        const transcription = currentConversationState.getTranscription();
+        
+        console.log('Updating live report');
+        // Get current report data (if any)
+        let currentReport = null;
+        try {
+            if (currentConversationState.report) {
+                currentReport = JSON.parse(currentConversationState.report);
+            }
+        } catch (error) {
+            console.error('Error parsing existing report:', error);
+        }
+        
+        // Create report prompt
+        const reportPromptText = createReportPrompt(transcription, currentReport);
+        
+        // Format message for OpenAI API
+        const reportMessages = [
+            { role: 'system', content: reportPromptText },
+        ];
+        
+        // Generate report
+        const reportResponse = await openaiService.generateResponse(reportMessages, false);
+        console.log('Live Report Update:', reportResponse);
+        
+        // Save the report to conversation state
+        currentConversationState.setReport(reportResponse);
+        
+        // Parse and update the live report display
+        try {
+            const reportData = JSON.parse(reportResponse);
+            
+            // Update report fields
+            document.getElementById('liveReportReason').textContent = reportData.reason || 'Brak danych';
+            document.getElementById('liveReportPlace').textContent = reportData.place || 'Brak danych';
+            document.getElementById('liveReportVictims').textContent = reportData.victims || 'Brak danych';
+            
+            // Update importance level
+            const importanceLevel = reportData.important_level || '?';
+            document.getElementById('liveImportanceLevel').textContent = `${importanceLevel}/5`;
+            
+            // Update importance indicator class
+            const importanceIndicator = document.getElementById('liveImportanceIndicator');
+            importanceIndicator.className = 'importance-indicator'; // Reset classes
+            
+            // Add appropriate class based on importance level
+            if (reportData.important_level >= 4) {
+                importanceIndicator.classList.add('high-priority');
+                document.getElementById('liveReportReason').classList.add('high-priority');
+            } else if (reportData.important_level >= 2) {
+                importanceIndicator.classList.add('medium-priority');
+                document.getElementById('liveReportReason').classList.remove('high-priority');
+            } else {
+                importanceIndicator.classList.add('low-priority');
+                document.getElementById('liveReportReason').classList.remove('high-priority');
+            }
+            
+            // Remove the pulsing animation once we have real data
+            document.querySelectorAll('.live-report-panel .report-value').forEach(el => {
+                el.style.animation = 'none';
+            });
+            
+        } catch (error) {
+            console.error('Error updating live report:', error);
+        }
+    } catch (error) {
+        console.error('Error generating live report:', error);
     }
 }
 

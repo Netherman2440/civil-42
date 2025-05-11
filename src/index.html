@@ -29,15 +29,50 @@
             </div>
             
             <div id="conversationInterface" style="display: none;">
-                <div class="status-container">
-                    <div id="connectionStatus" class="status">Disconnected</div>
-                    <div id="speakingStatus" class="speaking-status">Operator Silent</div>
+                <div class="conversation-layout">
+                    <div class="conversation-main">
+                        <div class="status-container">
+                            <div id="connectionStatus" class="status">Disconnected</div>
+                            <div id="speakingStatus" class="speaking-status">Operator Silent</div>
+                        </div>
+                        <div class="controls">
+                            <button id="endButton" class="button">End Conversation</button>
+                        </div>
+                        <div id="timer">Conversation time: 0 seconds</div>
+                        <div id="conversationHistory" class="conversation-history"></div>
+                    </div>
+                    
+                    <div class="live-report-panel">
+                        <h3>Raport na żywo</h3>
+                        <div class="report-container">
+                            <!-- Emergency Reason -->
+                            <div class="report-item">
+                                <h4>Powód zgłoszenia:</h4>
+                                <p id="liveReportReason" class="report-value">Oczekiwanie na dane...</p>
+                            </div>
+                            
+                            <!-- Location -->
+                            <div class="report-item">
+                                <h4>Lokalizacja:</h4>
+                                <p id="liveReportPlace" class="report-value">Oczekiwanie na dane...</p>
+                            </div>
+                            
+                            <!-- Victims -->
+                            <div class="report-item">
+                                <h4>Poszkodowani:</h4>
+                                <p id="liveReportVictims" class="report-value">Oczekiwanie na dane...</p>
+                            </div>
+                            
+                            <!-- Importance Level -->
+                            <div class="report-item">
+                                <h4>Poziom ważności:</h4>
+                                <div id="liveImportanceIndicator" class="importance-indicator low-priority">
+                                    <span id="liveImportanceLevel" class="importance-level">?/5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="controls">
-                    <button id="endButton" class="button">End Conversation</button>
-                </div>
-                <div id="timer">Conversation time: 0 seconds</div>
-                <div id="conversationHistory" class="conversation-history"></div>
             </div>
             
             <div id="analysisInProgress" style="display: none;">
