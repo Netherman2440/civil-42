@@ -213,16 +213,19 @@ async function startConversation() {
                 // Initialize live report with test data
                 initializeLiveReport();
             },
-            onDisconnect: () => {
+            onDisconnect: async () => {
                 console.log('Disconnected');
                 stopTimer();
                 updateStatus(false);
                 updateSpeakingStatus({ mode: 'listening' });
-                
+
                 // Save conversation state when disconnected
                 if (currentConversationState) {
                     currentConversationState.endConversation();
                     conversationStorage.saveConversation(currentConversationState);
+
+                    // Perform analysis when agent disconnects
+                    await performAnalysis();
                 }
             },
             onError: (error) => {
@@ -289,7 +292,7 @@ async function updateLiveReport() {
         ];
         
         // Generate report
-        const reportResponse = await openaiService.generateResponse(reportMessages, false);
+        const reportResponse = await openaiService.generateResponse(reportMessages, true);
         console.log('Live Report Update:', reportResponse);
         
         // Save the report to conversation state
@@ -369,7 +372,7 @@ async function performAnalysis() {
         const [analysisResponse, autoTitleResponse, reportResponse] = await Promise.all([
             openaiService.generateResponse(analysisMessages, false),
             openaiService.generateResponse(autoTitleMessages, false),
-            openaiService.generateResponse(reportMessages, false)
+            openaiService.generateResponse(reportMessages, true)
         ]);
 
         // Log results to console
