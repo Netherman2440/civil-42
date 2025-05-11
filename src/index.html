@@ -68,8 +68,36 @@
             </div>
             
             <div class="analysis-section">
-                <h3>Emergency Report</h3>
-                <div id="reportContent" class="analysis-content"></div>
+                <h3>Raport</h3>
+                <div id="reportContent">
+                    <div class="report-container">
+                        <!-- Emergency Reason -->
+                        <div class="report-item">
+                            <h4>Powód zgłoszenia:</h4>
+                            <p id="reportReason" class="report-value">Brak danych</p>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="report-item">
+                            <h4>Lokalizacja:</h4>
+                            <p id="reportPlace" class="report-value">Brak danych</p>
+                        </div>
+                        
+                        <!-- Victims -->
+                        <div class="report-item">
+                            <h4>Poszkodowani:</h4>
+                            <p id="reportVictims" class="report-value">Brak danych</p>
+                        </div>
+                        
+                        <!-- Importance Level -->
+                        <div class="report-item">
+                            <h4>Poziom ważności:</h4>
+                            <div id="importanceIndicator" class="importance-indicator low-priority">
+                                <span id="importanceLevel" class="importance-level">?/5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <button id="backToHomeButton" class="button">Back to Home</button>

@@ -7,6 +7,7 @@ import { marked } from 'marked';
 
 import { createAnalysisPrompt } from './@prompts/analysis';
 import { createAutoTitlePrompt } from './@prompts/autotitle';
+import { createReportPrompt } from './@prompts/report';
 
 // Import the OpenAI service
 import openaiService from './utils/openaiService';
@@ -247,10 +248,12 @@ async function performAnalysis() {
     const transcription = currentConversationState.getTranscription();
     const duration = currentConversationState.getDuration();
     const scenario = currentConversationState.scenario;
+    const currentReport = currentConversationState.report ? JSON.parse(currentConversationState.report) : null;
 
     // Create prompts
     const analysisPromptText = createAnalysisPrompt(duration, scenario, transcription);
     const autoTitlePromptText = createAutoTitlePrompt(transcription);
+    const reportPromptText = createReportPrompt(transcription, currentReport);
     
     // Format messages for OpenAI API
     const analysisMessages = [
@@ -261,20 +264,27 @@ async function performAnalysis() {
         { role: 'system', content: autoTitlePromptText },
     ];
 
+    const reportMessages = [
+        { role: 'system', content: reportPromptText },
+    ];
+
     // Perform API calls concurrently
     try {
-        const [analysisResponse, autoTitleResponse] = await Promise.all([
+        const [analysisResponse, autoTitleResponse, reportResponse] = await Promise.all([
             openaiService.generateResponse(analysisMessages, false),
-            openaiService.generateResponse(autoTitleMessages, false)
+            openaiService.generateResponse(autoTitleMessages, false),
+            openaiService.generateResponse(reportMessages, false)
         ]);
 
         // Log results to console
         console.log('Analysis Result:', analysisResponse);
         console.log('Auto Title Result:', autoTitleResponse);
+        console.log('Report Result:', reportResponse);
 
         // Set the results in the current conversation state
         currentConversationState.setSummary(analysisResponse);
         currentConversationState.setTitle(autoTitleResponse);
+        currentConversationState.setReport(reportResponse);
 
     } catch (error) {
         console.error('Error performing analysis:', error);
@@ -374,7 +384,6 @@ function loadConversationSummary(id) {
     
     // Display title in blue (replacing the "Title" label)
     document.getElementById('titleContent').textContent = conv.title || '';
-
     
     // Display only scenario content without the "Scenario" label
     document.getElementById('scenarioContent').textContent = conv.scenario || 'No scenario available';
@@ -387,7 +396,54 @@ function loadConversationSummary(id) {
         summaryElement.textContent = 'No summary available';
     }
     
-    document.getElementById('reportContent').textContent = conv.report || 'No report available';
+    // Parse and display the report JSON in a structured way
+    try {
+        if (conv.report) {
+            const reportData = JSON.parse(conv.report);
+            
+            // Update report fields
+            document.getElementById('reportReason').textContent = reportData.reason || 'Brak danych';
+            document.getElementById('reportPlace').textContent = reportData.place || 'Brak danych';
+            document.getElementById('reportVictims').textContent = reportData.victims || 'Brak danych';
+            
+            // Update importance level
+            const importanceLevel = reportData.important_level || '?';
+            document.getElementById('importanceLevel').textContent = `${importanceLevel}/5`;
+            
+            // Update importance indicator class
+            const importanceIndicator = document.getElementById('importanceIndicator');
+            importanceIndicator.className = 'importance-indicator'; // Reset classes
+            
+            // Add appropriate class based on importance level
+            if (reportData.important_level >= 4) {
+                importanceIndicator.classList.add('high-priority');
+            } else if (reportData.important_level >= 2) {
+                importanceIndicator.classList.add('medium-priority');
+            } else {
+                importanceIndicator.classList.add('low-priority');
+            }
+            
+            // Highlight high priority reason
+            const reasonElement = document.getElementById('reportReason');
+            if (reportData.important_level >= 4) {
+                reasonElement.classList.add('high-priority');
+            } else {
+                reasonElement.classList.remove('high-priority');
+            }
+            
+            // Show the report container
+            document.querySelector('.report-container').style.display = 'grid';
+            
+        } else {
+            // Hide the report container if no report data
+            document.querySelector('.report-container').style.display = 'none';
+            document.getElementById('reportContent').textContent = 'No report available';
+        }
+    } catch (error) {
+        console.error('Error parsing report JSON:', error);
+        document.querySelector('.report-container').style.display = 'none';
+        document.getElementById('reportContent').textContent = 'Error displaying report data';
+    }
 }
 
 // Saved Conversations Display

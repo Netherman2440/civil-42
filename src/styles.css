@@ -448,3 +448,63 @@ h3 {
     border-radius: 5px;
     margin-bottom: 1.5rem;
 }
+
+/* Report Styling */
+.report-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.report-item {
+    background-color: white;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.report-item h4 {
+    margin-top: 0;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.report-value {
+    margin: 0;
+    font-size: 16px;
+    word-break: break-word;
+}
+
+.importance-indicator {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.low-priority {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.medium-priority {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.high-priority {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.high-priority.report-value {
+    color: #721c24;
+    font-weight: bold;
+}
