@@ -121,26 +121,37 @@ h3 {
     border: 1px solid #ddd;
 }
 
-/* Scenario display */
+/* Scenario display - zmniejszona wersja */
 .scenario-display {
     background-color: #f0f7ff;
-    padding: 25px;
+    padding: 15px;  /* zmniejszony padding z 25px */
     border-radius: 12px;
     border-left: 5px solid #4361ee;
-    margin-bottom: 30px;
+    margin-bottom: 20px;  /* zmniejszony margines z 30px */
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .scenario-display h3 {
     margin-top: 0;
     color: #4361ee;
+    font-size: 1.1rem;  /* zmniejszona czcionka */
+    margin-bottom: 10px;  /* zmniejszony margines */
+}
+
+.scenario-display p {
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;  /* zmniejszona czcionka */
+    line-height: 1.4;  /* zmniejszony odstęp między wierszami */
 }
 
 .countdown {
-    font-size: 4rem;
+    font-size: 2.5rem;  /* zmniejszona czcionka z 4rem */
     font-weight: 700;
     color: #4361ee;
     text-align: center;
-    margin: 20px 0;
+    margin: 10px 0;  /* zmniejszony margines z 20px */
 }
 
 /* Status indicators */
