@@ -583,3 +583,56 @@ h3 {
         margin-bottom: 15px;
     }
 }
+
+/* Conversation history scrollable container */
+#conversationHistory {
+    max-height: 400px; /* Adjust this height as needed */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin-bottom: 15px;
+}
+
+/* Message styling */
+.message {
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.user-message {
+    align-self: flex-end;
+    background-color: #dcf8c6;
+    margin-left: auto;
+}
+
+.agent-message {
+    align-self: flex-start;
+    background-color: #f1f0f0;
+    margin-right: auto;
+}
+
+/* Add a scrollbar styling for better visibility */
+#conversationHistory::-webkit-scrollbar {
+    width: 8px;
+}
+
+#conversationHistory::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#conversationHistory::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+#conversationHistory::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
